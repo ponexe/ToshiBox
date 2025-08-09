@@ -10,6 +10,7 @@ namespace ToshiBox.UI
 {
     public class MainWindow : Window
     {
+        private readonly WindowSystem _windowSystem;
         private enum SelectedFeature
         {
             None,
@@ -21,6 +22,9 @@ namespace ToshiBox.UI
 
         public MainWindow() : base("ToshiBox Settings")
         {
+            _windowSystem = new WindowSystem(Service.PluginInterface.InternalName);
+            
+            Service.PluginInterface.UiBuilder.Draw += _windowSystem.Draw;
         }
 
         #region Draw Method
@@ -237,6 +241,14 @@ namespace ToshiBox.UI
             ImGui.PopItemWidth();
         }
 
+        #endregion
+        
+        #region MainWindow Dispose
+
+        public void Dispose()
+        {
+            Service.PluginInterface.UiBuilder.Draw -= _windowSystem.Draw;
+        }
         #endregion
     }
 }

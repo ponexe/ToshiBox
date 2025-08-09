@@ -15,7 +15,6 @@ namespace ToshiBox
     public sealed class ToshiBox : IDalamudPlugin
     {
         private readonly WindowSystem _windowSystem = new("ToshiBox");
-        private MainWindow _mainWindow;
         public AutoChestOpen AutoChestOpenInstance;
         public string Name => "ToshiBox";
 
@@ -37,11 +36,10 @@ namespace ToshiBox
             PandoraIPC.Init();
 
             System.MainWindow = new MainWindow();
-            Service.WindowSystem.AddWindow(_mainWindow);
 
             Service.PluginInterface.UiBuilder.Draw += _windowSystem.Draw;
-            Service.PluginInterface.UiBuilder.OpenConfigUi += () => _mainWindow.IsOpen = true;
-            Service.PluginInterface.UiBuilder.OpenMainUi += () => _mainWindow.IsOpen = true;
+            Service.PluginInterface.UiBuilder.OpenConfigUi += () => System.MainWindow.IsOpen = true;
+            Service.PluginInterface.UiBuilder.OpenMainUi += () => System.MainWindow.IsOpen = true;
 
             Svc.Commands.AddHandler("/toshibox", new CommandInfo(OnCommand)
             {
@@ -73,17 +71,15 @@ namespace ToshiBox
             }
             else
             {
-                _mainWindow.IsOpen = !_mainWindow.IsOpen;
+                System.MainWindow.IsOpen = !System.MainWindow.IsOpen;
             }
         }
 
         public void Dispose()
         {
             System.AutoRetainerListingInstance.Disable();
+            System.MainWindow.Dispose();
             PandoraIPC.Dispose();
-            Service.PluginInterface.UiBuilder.Draw -= _windowSystem.Draw;
-            Service.PluginInterface.UiBuilder.OpenConfigUi -= () => _mainWindow.IsOpen = true;
-            Service.PluginInterface.UiBuilder.OpenMainUi -= () => _mainWindow.IsOpen = true;
 
             Svc.Commands.RemoveHandler("/toshibox");
             Svc.Commands.RemoveHandler("/toshi");
