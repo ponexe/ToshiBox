@@ -24,14 +24,10 @@ namespace ToshiBox.Features;
 
 public partial class AutoRetainerListing
 {
-    private readonly Events _events;
-    private readonly Config _config;
     private readonly TaskManager taskManager;
     
-    public AutoRetainerListing(Events events, Config config)
+    public AutoRetainerListing()
     {
-        _events = events;
-        _config = config;
         taskManager = new TaskManager();
     }
 
@@ -43,7 +39,7 @@ public partial class AutoRetainerListing
     
     public void IsEnabled()
     {
-        if (_config.AutoRetainerListingConfig.Enabled)
+        if (System.Config.AutoRetainerListingConfig.Enabled)
         {
             Enable();
             Helpers.PrintGlowshi("If you know you know is enabled",45);
@@ -61,16 +57,16 @@ public partial class AutoRetainerListing
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "RetainerSellList", OnRetainerSellList); // List of items
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "RetainerSell", OnRetainerSell);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "RetainerSell", OnRetainerSell);
-        _events.ListingsStart += OnListingsStart;
-        _events.ListingsEnd += OnListingsEnd;
+        System.EventInstance.ListingsStart += OnListingsStart;
+        System.EventInstance.ListingsEnd += OnListingsEnd;
     }
 
     public void Disable()
     {
         Svc.AddonLifecycle.UnregisterListener(OnRetainerSellList);
         Svc.AddonLifecycle.UnregisterListener(OnRetainerSell);
-        _events.ListingsStart -= OnListingsStart;
-        _events.ListingsEnd -= OnListingsEnd; 
+        System.EventInstance.ListingsStart -= OnListingsStart;
+        System.EventInstance.ListingsEnd -= OnListingsEnd; 
         taskManager.Abort();
     }
 
@@ -231,7 +227,7 @@ public partial class AutoRetainerListing
                 return true;
             }
 
-            if (_config.AutoRetainerListingConfig.SeparateNQAndHQ && IsCurrentItemHQ)
+            if (System.Config.AutoRetainerListingConfig.SeparateNQAndHQ && IsCurrentItemHQ)
             {
                 var foundHQItem = false;
                 for (var i = 1; i <= 12 && !foundHQItem; i++)
@@ -270,7 +266,7 @@ public partial class AutoRetainerListing
                 var ui = &addon->AtkUnitBase;
                 var priceComponent = addon->AskingPrice;
 
-                if (CurrentMarketLowestPrice - _config.AutoRetainerListingConfig.PriceReduction < _config.AutoRetainerListingConfig.LowestAcceptablePrice)
+                if (CurrentMarketLowestPrice - System.Config.AutoRetainerListingConfig.PriceReduction < System.Config.AutoRetainerListingConfig.LowestAcceptablePrice)
                 {
                     SeString message;
 
@@ -280,7 +276,7 @@ public partial class AutoRetainerListing
                             SeString.CreateItemLink(CurrentItemSearchItemID,
                                 IsCurrentItemHQ ? ItemKind.Hq : ItemKind.Normal),
                             CurrentMarketLowestPrice, CurrentItemPrice,
-                            _config.AutoRetainerListingConfig.LowestAcceptablePrice);
+                            System.Config.AutoRetainerListingConfig.LowestAcceptablePrice);
                     }
                     else // CurrentMarketLowestPrice == 0
                     {
@@ -296,12 +292,12 @@ public partial class AutoRetainerListing
                 }
 
 
-                if (_config.AutoRetainerListingConfig.MaxPriceReduction != 0 &&
-                    CurrentItemPrice - CurrentMarketLowestPrice > _config.AutoRetainerListingConfig.MaxPriceReduction)
+                if (System.Config.AutoRetainerListingConfig.MaxPriceReduction != 0 &&
+                    CurrentItemPrice - CurrentMarketLowestPrice > System.Config.AutoRetainerListingConfig.MaxPriceReduction)
                 {
                     var message = GetSeString("ItemExceededMaxPriceReduction",
                         SeString.CreateItemLink(CurrentItemSearchItemID, IsCurrentItemHQ ? ItemKind.Hq : ItemKind.Normal),
-                        CurrentMarketLowestPrice, CurrentItemPrice, _config.AutoRetainerListingConfig.MaxPriceReduction);
+                        CurrentMarketLowestPrice, CurrentItemPrice, System.Config.AutoRetainerListingConfig.MaxPriceReduction);
 
                     Svc.Chat.Print(message);
                     Callback.Fire((AtkUnitBase*)addon, true, 1);
@@ -309,7 +305,7 @@ public partial class AutoRetainerListing
                     return true;
                 }
 
-                priceComponent->SetValue(CurrentMarketLowestPrice - _config.AutoRetainerListingConfig.PriceReduction);
+                priceComponent->SetValue(CurrentMarketLowestPrice - System.Config.AutoRetainerListingConfig.PriceReduction);
                 Callback.Fire((AtkUnitBase*)addon, true, 0);
                 ui->Close(true);
                 return true;

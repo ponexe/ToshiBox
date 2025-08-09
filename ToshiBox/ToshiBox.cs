@@ -3,7 +3,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
-using ECommons.Commands;
 using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ToshiBox.Common;
@@ -13,39 +12,36 @@ using ToshiBox.UI;
 
 namespace ToshiBox
 {
-    public class ToshiBox : IDalamudPlugin
+    public sealed class ToshiBox : IDalamudPlugin
     {
         private readonly WindowSystem _windowSystem = new("ToshiBox");
         private MainWindow _mainWindow;
-        public Events EventInstance;
-        public Config ConfigInstance;
-        public AutoRetainerListing AutoRetainerListingInstance;
         public AutoChestOpen AutoChestOpenInstance;
-        private readonly IDalamudPluginInterface _pluginInterface;
         public string Name => "ToshiBox";
 
         public ToshiBox(IDalamudPluginInterface pluginInterface)
         {
-            _pluginInterface = pluginInterface;
+            pluginInterface.Create<Service>();
+
+            System.EventInstance = new Events();
+            System.Config = EzConfig.Init<Config>();
             // Initialize ECommons and config
             ECommonsMain.Init(pluginInterface, this);
-            EventInstance = new Events();
-            ConfigInstance = EzConfig.Init<Config>();
 
-            AutoRetainerListingInstance = new AutoRetainerListing(EventInstance, ConfigInstance);
-            AutoRetainerListingInstance.IsEnabled();
+            System.AutoRetainerListingInstance = new AutoRetainerListing();
+            System.AutoRetainerListingInstance.IsEnabled();
 
-            AutoChestOpenInstance = new AutoChestOpen(EventInstance, ConfigInstance);
+            AutoChestOpenInstance = new AutoChestOpen();
             AutoChestOpenInstance.IsEnabled();
 
             PandoraIPC.Init();
 
-            _mainWindow = new MainWindow(AutoRetainerListingInstance, AutoChestOpenInstance, ConfigInstance);
-            _windowSystem.AddWindow(_mainWindow);
+            System.MainWindow = new MainWindow();
+            Service.WindowSystem.AddWindow(_mainWindow);
 
-            _pluginInterface.UiBuilder.Draw += _windowSystem.Draw;
-            _pluginInterface.UiBuilder.OpenConfigUi += () => _mainWindow.IsOpen = true;
-            _pluginInterface.UiBuilder.OpenMainUi += () => _mainWindow.IsOpen = true;
+            Service.PluginInterface.UiBuilder.Draw += _windowSystem.Draw;
+            Service.PluginInterface.UiBuilder.OpenConfigUi += () => _mainWindow.IsOpen = true;
+            Service.PluginInterface.UiBuilder.OpenMainUi += () => _mainWindow.IsOpen = true;
 
             Svc.Commands.AddHandler("/toshibox", new CommandInfo(OnCommand)
             {
@@ -61,8 +57,8 @@ namespace ToshiBox
         {
             if (string.Equals(args, "toggleshangriladida009"))
             {
-                ConfigInstance.AutoRetainerListingConfig.Enabled = !ConfigInstance.AutoRetainerListingConfig.Enabled;
-                AutoRetainerListingInstance.IsEnabled();
+                System.Config.AutoRetainerListingConfig.Enabled = !System.Config.AutoRetainerListingConfig.Enabled;
+                System.AutoRetainerListingInstance.IsEnabled();
                 EzConfig.Save();
             }
 
@@ -83,11 +79,11 @@ namespace ToshiBox
 
         public void Dispose()
         {
-            AutoRetainerListingInstance.Disable();
+            System.AutoRetainerListingInstance.Disable();
             PandoraIPC.Dispose();
-            _pluginInterface.UiBuilder.Draw -= _windowSystem.Draw;
-            _pluginInterface.UiBuilder.OpenConfigUi -= () => _mainWindow.IsOpen = true;
-            _pluginInterface.UiBuilder.OpenMainUi -= () => _mainWindow.IsOpen = true;
+            Service.PluginInterface.UiBuilder.Draw -= _windowSystem.Draw;
+            Service.PluginInterface.UiBuilder.OpenConfigUi -= () => _mainWindow.IsOpen = true;
+            Service.PluginInterface.UiBuilder.OpenMainUi -= () => _mainWindow.IsOpen = true;
 
             Svc.Commands.RemoveHandler("/toshibox");
             Svc.Commands.RemoveHandler("/toshi");

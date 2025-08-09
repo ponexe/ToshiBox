@@ -18,7 +18,6 @@ namespace ToshiBox.Features
 {
     public unsafe class AutoChestOpen
     {
-        private readonly Config _config;
         private readonly TaskManager taskManager;
 
         private ushort? _lastContentFinderId = null;
@@ -31,15 +30,14 @@ namespace ToshiBox.Features
         private static DateTime CloseWindowTime = DateTime.Now;
         private static readonly Random Rand = new();
 
-        public AutoChestOpen(Events events, Config config)
+        public AutoChestOpen()
         {
-            _config = config;
             taskManager = new TaskManager();
         }
 
         public void IsEnabled()
         {
-            if (_config.AutoChestOpenConfig.Enabled)
+            if (System.Config.AutoChestOpenConfig.Enabled)
             {
                 Enable();
             }
@@ -89,7 +87,7 @@ namespace ToshiBox.Features
                 }
             }
 
-            if (!_config.AutoChestOpenConfig.OpenInHighEndDuty && _isHighEndDuty)
+            if (!System.Config.AutoChestOpenConfig.OpenInHighEndDuty && _isHighEndDuty)
                 return;
 
             var player = Player.Object;
@@ -99,7 +97,7 @@ namespace ToshiBox.Features
             {
                 if (o == null) return false;
                 
-                var requiredDistance = _config.AutoChestOpenConfig.Distance;
+                var requiredDistance = System.Config.AutoChestOpenConfig.Distance;
                 if (Vector3.DistanceSquared(player.Position, o.Position) > requiredDistance * requiredDistance)
                     return false;
 
@@ -129,7 +127,7 @@ namespace ToshiBox.Features
                 return;
             }
 
-            var delay = TimeSpan.FromSeconds(_config.AutoChestOpenConfig.Delay);
+            var delay = TimeSpan.FromSeconds(System.Config.AutoChestOpenConfig.Delay);
             if (DateTime.Now - _inRangeStartTime < delay)
                 return;
 
@@ -140,7 +138,7 @@ namespace ToshiBox.Features
                 Svc.Targets.Target = treasure;
                 TargetSystem.Instance()->InteractWithObject((FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)(void*)treasure.Address);
 
-                if (_config.AutoChestOpenConfig.CloseLootWindow)
+                if (System.Config.AutoChestOpenConfig.CloseLootWindow)
                 {
                     CloseWindowTime = DateTime.Now.AddSeconds(0.5);
                 }

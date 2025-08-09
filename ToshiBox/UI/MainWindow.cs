@@ -1,21 +1,15 @@
 using System;
-using Dalamud.Interface.Colors;
+using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 using ECommons.Configuration;
 using ECommons.Logging;
-using ToshiBox.Common;
-using ToshiBox.Features;
 
 namespace ToshiBox.UI
 {
     public class MainWindow : Window
     {
-        private readonly AutoRetainerListing _autoRetainerListing;
-        private readonly AutoChestOpen _autoChestOpen;
-        private readonly Config _config;
-
         private enum SelectedFeature
         {
             None,
@@ -25,12 +19,8 @@ namespace ToshiBox.UI
 
         private SelectedFeature _selectedFeature = SelectedFeature.None;
 
-        public MainWindow(AutoRetainerListing autoRetainerListing, AutoChestOpen autoChestOpen, Config config)
-            : base("ToshiBox Settings")
+        public MainWindow() : base("ToshiBox Settings")
         {
-            _autoRetainerListing = autoRetainerListing;
-            _autoChestOpen = autoChestOpen;
-            _config = config;
         }
 
         #region Draw Method
@@ -38,12 +28,12 @@ namespace ToshiBox.UI
         public override void Draw()
         {
             // Set the overall container to a fixed size big enough for both panels
-            ImGui.BeginChild("ToshiBox_MainChild", new System.Numerics.Vector2(600, 300), false);
+            ImGui.BeginChild("ToshiBox_MainChild", new Vector2(600, 300), false);
 
             // Left panel fixed width
             float leftWidth = 250f;
 
-            ImGui.BeginChild("LeftPanel", new System.Numerics.Vector2(leftWidth, 0), true);
+            ImGui.BeginChild("LeftPanel", new Vector2(leftWidth, 0), true);
             ImGui.TextColored(ImGuiColors.DalamudWhite, "Features");
             ImGui.Separator();
             DrawFeatureList();
@@ -55,7 +45,7 @@ namespace ToshiBox.UI
             var availWidth = 600 - leftWidth - ImGui.GetStyle().ItemSpacing.X; // total width - left panel - spacing
             if (availWidth < 0) availWidth = 300; // fallback
 
-            ImGui.BeginChild("RightPanel", new System.Numerics.Vector2(availWidth, 0), true);
+            ImGui.BeginChild("RightPanel", new Vector2(availWidth, 0), true);
             ImGui.TextColored(ImGuiColors.DalamudWhite, "Settings");
             ImGui.Separator();
             DrawSettingsPanel();
@@ -63,8 +53,6 @@ namespace ToshiBox.UI
 
             ImGui.EndChild();
         }
-
-
 
         #endregion
 
@@ -76,13 +64,15 @@ namespace ToshiBox.UI
             float checkboxWidth = ImGui.GetFrameHeight();
             float spacing = ImGui.GetStyle().ItemSpacing.X;
             float selectableWidth = columnWidth - checkboxWidth - spacing;
-            var darkerBg = new System.Numerics.Vector4(0.15f, 0.15f, 0.15f, 1.0f);
+            var darkerBg = new Vector4(0.15f, 0.15f, 0.15f, 1.0f);
 
-            void DrawFeature(string label, string checkboxId, ref bool enabled, SelectedFeature feature, Action onToggle)
+            void DrawFeature(string label, string checkboxId, ref bool enabled, SelectedFeature feature,
+                Action onToggle)
             {
                 ImGui.PushStyleColor(ImGuiCol.ChildBg, darkerBg);
-                ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new System.Numerics.Vector2(4, 4));
-                ImGui.BeginChild(label + "_Group", new System.Numerics.Vector2(columnWidth, 40), true, ImGuiWindowFlags.None);
+                ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(4, 4));
+                ImGui.BeginChild(label + "_Group", new Vector2(columnWidth, 40), true,
+                    ImGuiWindowFlags.None);
 
                 ImGui.Checkbox(checkboxId, ref enabled);
                 if (ImGui.IsItemDeactivatedAfterEdit())
@@ -94,7 +84,8 @@ namespace ToshiBox.UI
                 ImGui.SameLine();
 
                 bool selected = _selectedFeature == feature;
-                if (ImGui.Selectable(label, selected, ImGuiSelectableFlags.None, new System.Numerics.Vector2(selectableWidth, 0)))
+                if (ImGui.Selectable(label, selected, ImGuiSelectableFlags.None,
+                        new Vector2(selectableWidth, 0)))
                 {
                     _selectedFeature = feature;
                     PluginLog.Debug($"Selected feature changed to: {_selectedFeature}");
@@ -108,24 +99,24 @@ namespace ToshiBox.UI
 
             // Always draw both features regardless of enabled state
             {
-                bool enabled = _config.AutoRetainerListingConfig.Enabled;
+                bool enabled = System.Config.AutoRetainerListingConfig.Enabled;
                 DrawFeature("Auto Retainer Listing", "##AutoRetainerEnabled", ref enabled,
                     SelectedFeature.AutoRetainerListing,
                     () =>
                     {
-                        _config.AutoRetainerListingConfig.Enabled = enabled;
-                        _autoRetainerListing.IsEnabled();
+                        System.Config.AutoRetainerListingConfig.Enabled = enabled;
+                        System.AutoRetainerListingInstance.IsEnabled();
                     });
             }
 
             {
-                bool enabled = _config.AutoChestOpenConfig.Enabled;
+                bool enabled = System.Config.AutoChestOpenConfig.Enabled;
                 DrawFeature("Auto Chest Open", "##AutoChestOpenEnabled", ref enabled,
                     SelectedFeature.AutoChestOpen,
                     () =>
                     {
-                        _config.AutoChestOpenConfig.Enabled = enabled;
-                        _autoChestOpen.IsEnabled();
+                        System.Config.AutoChestOpenConfig.Enabled = enabled;
+                        System.AutoChestOpenInstance.IsEnabled();
                     });
             }
         }
@@ -158,7 +149,7 @@ namespace ToshiBox.UI
 
         private void DrawAutoRetainerListingSettings()
         {
-            if (!_config.AutoRetainerListingConfig.Enabled)
+            if (!System.Config.AutoRetainerListingConfig.Enabled)
             {
                 ImGui.TextColored(ImGuiColors.DalamudGrey, "Enable the feature to adjust settings.");
                 return;
@@ -166,31 +157,31 @@ namespace ToshiBox.UI
 
             ImGui.PushItemWidth(250f);
 
-            int priceReduction = _config.AutoRetainerListingConfig.PriceReduction;
+            int priceReduction = System.Config.AutoRetainerListingConfig.PriceReduction;
             if (ImGui.InputInt("Price Reduction", ref priceReduction))
             {
-                _config.AutoRetainerListingConfig.PriceReduction = Math.Max(0, priceReduction);
+                System.Config.AutoRetainerListingConfig.PriceReduction = Math.Max(0, priceReduction);
                 EzConfig.Save();
             }
 
-            int lowestPrice = _config.AutoRetainerListingConfig.LowestAcceptablePrice;
+            int lowestPrice = System.Config.AutoRetainerListingConfig.LowestAcceptablePrice;
             if (ImGui.InputInt("Lowest Acceptable Price", ref lowestPrice))
             {
-                _config.AutoRetainerListingConfig.LowestAcceptablePrice = Math.Max(0, lowestPrice);
+                System.Config.AutoRetainerListingConfig.LowestAcceptablePrice = Math.Max(0, lowestPrice);
                 EzConfig.Save();
             }
 
-            int maxReduction = _config.AutoRetainerListingConfig.MaxPriceReduction;
+            int maxReduction = System.Config.AutoRetainerListingConfig.MaxPriceReduction;
             if (ImGui.InputInt("Max Price Reduction (0 = no limit)", ref maxReduction))
             {
-                _config.AutoRetainerListingConfig.MaxPriceReduction = Math.Max(0, maxReduction);
+                System.Config.AutoRetainerListingConfig.MaxPriceReduction = Math.Max(0, maxReduction);
                 EzConfig.Save();
             }
 
-            bool separateNQHQ = _config.AutoRetainerListingConfig.SeparateNQAndHQ;
+            bool separateNQHQ = System.Config.AutoRetainerListingConfig.SeparateNQAndHQ;
             if (ImGui.Checkbox("Separate NQ and HQ", ref separateNQHQ))
             {
-                _config.AutoRetainerListingConfig.SeparateNQAndHQ = separateNQHQ;
+                System.Config.AutoRetainerListingConfig.SeparateNQAndHQ = separateNQHQ;
                 EzConfig.Save();
             }
 
@@ -213,33 +204,33 @@ namespace ToshiBox.UI
 
             ImGui.PushItemWidth(250f);
 
-            float distance = _config.AutoChestOpenConfig.Distance;
+            float distance = System.Config.AutoChestOpenConfig.Distance;
             if (ImGui.SliderFloat("Distance (yalms)", ref distance, 0f, 3f, "%.1f"))
             {
                 distance = (float)Math.Round(distance * 10f) / 10f;
-                _config.AutoChestOpenConfig.Distance = distance;
+                System.Config.AutoChestOpenConfig.Distance = distance;
                 EzConfig.Save();
             }
 
-            float delay = _config.AutoChestOpenConfig.Delay;
+            float delay = System.Config.AutoChestOpenConfig.Delay;
             if (ImGui.SliderFloat("Delay (seconds)", ref delay, 0f, 2f, "%.1f"))
             {
                 delay = (float)Math.Round(delay * 10f) / 10f;
-                _config.AutoChestOpenConfig.Delay = delay;
+                System.Config.AutoChestOpenConfig.Delay = delay;
                 EzConfig.Save();
             }
 
-            bool openInHighEnd = _config.AutoChestOpenConfig.OpenInHighEndDuty;
+            bool openInHighEnd = System.Config.AutoChestOpenConfig.OpenInHighEndDuty;
             if (ImGui.Checkbox("Open Chests in High End Duties", ref openInHighEnd))
             {
-                _config.AutoChestOpenConfig.OpenInHighEndDuty = openInHighEnd;
+                System.Config.AutoChestOpenConfig.OpenInHighEndDuty = openInHighEnd;
                 EzConfig.Save();
             }
 
-            bool closeLootWindow = _config.AutoChestOpenConfig.CloseLootWindow;
+            bool closeLootWindow = System.Config.AutoChestOpenConfig.CloseLootWindow;
             if (ImGui.Checkbox("Close Loot Window After Opening", ref closeLootWindow))
             {
-                _config.AutoChestOpenConfig.CloseLootWindow = closeLootWindow;
+                System.Config.AutoChestOpenConfig.CloseLootWindow = closeLootWindow;
                 EzConfig.Save();
             }
 
