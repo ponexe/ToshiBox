@@ -1,6 +1,6 @@
-using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 namespace ToshiBox;
 
@@ -8,5 +8,5 @@ namespace ToshiBox;
 public class Service
 {
     [PluginService] public static IDalamudPluginInterface PluginInterface { get; set; }
-    [PluginService] public static WindowSystem WindowSystem { get; set; }
+    [PluginService] public static ICommandManager CommandManager { get; set; }
 }

@@ -11,6 +11,7 @@ namespace ToshiBox.UI
     public class MainWindow : Window
     {
         private readonly WindowSystem _windowSystem;
+
         private enum SelectedFeature
         {
             None,
@@ -23,7 +24,7 @@ namespace ToshiBox.UI
         public MainWindow() : base("ToshiBox Settings")
         {
             _windowSystem = new WindowSystem(Service.PluginInterface.InternalName);
-            
+
             Service.PluginInterface.UiBuilder.Draw += _windowSystem.Draw;
         }
 
@@ -199,7 +200,7 @@ namespace ToshiBox.UI
         private void DrawAutoChestOpenSettings()
         {
             // Temporarily force enabled = true for testing so settings show:
-            bool enabled = true; // _config.AutoChestOpenConfig.Enabled;
+            bool enabled = true; // System.Config.AutoChestOpenConfig.Enabled;
             if (!enabled)
             {
                 ImGui.TextColored(ImGuiColors.DalamudGrey, "Enable the feature to adjust settings.");
@@ -242,13 +243,14 @@ namespace ToshiBox.UI
         }
 
         #endregion
-        
+
         #region MainWindow Dispose
 
         public void Dispose()
         {
             Service.PluginInterface.UiBuilder.Draw -= _windowSystem.Draw;
         }
+
         #endregion
     }
 }
