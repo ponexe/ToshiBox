@@ -38,9 +38,10 @@ namespace ToshiBox
             {
                 InternalName = "ToshiBox_Config",
                 Title = "ToshiBox Config",
-                Size = new Vector2(300.0f, 300.0f),
+                Size = new Vector2(450.0f, 450.0f),
                 Position = new Vector2(300.0f, 300.0f),
-                NativeController = System.NativeController
+                NativeController = System.NativeController,
+                RememberClosePosition = true
             };
 
             // System.MainWindow = new MainWindow();
