@@ -14,8 +14,6 @@ namespace ToshiBox
 {
     public sealed class ToshiBox : IDalamudPlugin
     {
-        private readonly WindowSystem _windowSystem = new("ToshiBox");
-        public AutoChestOpen AutoChestOpenInstance;
         public string Name => "ToshiBox";
 
         public ToshiBox(IDalamudPluginInterface pluginInterface)
@@ -30,14 +28,14 @@ namespace ToshiBox
             System.AutoRetainerListingInstance = new AutoRetainerListing();
             System.AutoRetainerListingInstance.IsEnabled();
 
-            AutoChestOpenInstance = new AutoChestOpen();
-            AutoChestOpenInstance.IsEnabled();
+            System.AutoChestOpenInstance = new AutoChestOpen();
+            System.AutoChestOpenInstance.IsEnabled();
 
             PandoraIPC.Init();
 
             System.MainWindow = new MainWindow();
 
-            Service.PluginInterface.UiBuilder.Draw += _windowSystem.Draw;
+            Service.PluginInterface.UiBuilder.Draw += Service.WindowSystem.Draw;
             Service.PluginInterface.UiBuilder.OpenConfigUi += () => System.MainWindow.IsOpen = true;
             Service.PluginInterface.UiBuilder.OpenMainUi += () => System.MainWindow.IsOpen = true;
 
